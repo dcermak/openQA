@@ -122,6 +122,10 @@ BuildRequires:  %{test_requires}
 %if 0%{?suse_version} >= 1330
 Requires(pre):  group(nogroup)
 %endif
+%if 0%{?suse_version} > 1500
+BuildRequires:  sysuser-tools
+%sysusers_requires
+%endif
 
 %description
 openQA is a testing framework that allows you to test GUI applications on one
@@ -264,6 +268,10 @@ sed -e 's,/bin/env python,/bin/python,' -i script/openqa-label-all
 
 %build
 %make_build
+%if 0%{?suse_version} > 1500
+%sysusers_generate_pre usr/lib/sysusers.d/%{name}-worker.conf %{name}-worker %{name}-worker.conf
+%sysusers_generate_pre usr/lib/sysusers.d/geekotest.conf %{name} geekotest.conf
+%endif
 
 %check
 #for double checking
@@ -345,11 +353,15 @@ mkdir %{buildroot}%{_localstatedir}/lib/openqa/webui/cache
 #
 %fdupes %{buildroot}/%{_prefix}
 
+%if 0%{?suse_version} > 1500
+%pre -f %{name}.pre
+%else
 %pre
 if ! getent passwd geekotest > /dev/null; then
     %{_sbindir}/useradd -r -g nogroup -c "openQA user" \
         -d %{_localstatedir}/lib/openqa geekotest 2>/dev/null || :
 fi
+%endif
 
 %service_add_pre %{openqa_services}
 
@@ -367,6 +379,9 @@ if [ "$1" = 1 ]; then
   fi
 fi
 
+%if 0%{?suse_version} > 1500
+%pre worker -f openQA-worker.pre
+%else
 %pre worker
 if ! getent passwd _openqa-worker > /dev/null; then
   %{_sbindir}/useradd -r -g nogroup -c "openQA worker" \
@@ -374,6 +389,7 @@ if ! getent passwd _openqa-worker > /dev/null; then
   # might fail for non-kvm workers (qemu package owns the group)
   %{_sbindir}/usermod _openqa-worker -a -G kvm || :
 fi
+%endif
 
 %service_add_pre %{openqa_worker_services}
 
@@ -543,6 +559,7 @@ fi
 %dir %{_localstatedir}/lib/openqa/share/factory/repo
 %dir %{_localstatedir}/lib/openqa/share/factory/other
 %ghost %{_localstatedir}/log/openqa
+%{_sysusersdir}/geekotest.conf
 
 %files devel
 
@@ -607,6 +624,7 @@ fi
 %dir %{_localstatedir}/lib/openqa/cache
 # own one pool - to create the others is task of the admin
 %dir %{_localstatedir}/lib/openqa/pool/1
+%{_sysusersdir}/%{name}-worker.conf
 
 %files client
 %dir %{_datadir}/openqa
