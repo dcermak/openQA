@@ -119,6 +119,8 @@ main_requires:
   perl(FindBin):
   perl(Getopt::Long::Descriptive):
   perl(IO::Handle):
+  # required to decompress .tar.xz compressed disk images
+  perl(IO::Uncompress::UnXz):
   perl(IPC::Run):
   perl(JSON::Validator):
   perl(LWP::UserAgent):

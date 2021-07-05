@@ -44,6 +44,7 @@ requires 'Getopt::Long';
 requires 'Getopt::Long::Descriptive';
 requires 'IO::Handle';
 requires 'IO::Socket::SSL', '>= 2.009';
+requires 'IO::Uncompress::UnXz';
 requires 'IPC::Run';
 requires 'JSON::Validator';
 requires 'JavaScript::Minifier::XS', '>= 0.11';
